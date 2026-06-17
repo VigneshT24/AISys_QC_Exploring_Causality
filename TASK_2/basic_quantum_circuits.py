@@ -44,7 +44,7 @@ class BasicQuantumCircuits():
         Raises:
             ValueError: if the entered parameter 'n_qubits' is not an integer and/or is negative
         """
-        if not isinstance(self, n_qubits, int):
+        if not isinstance(n_qubits, int):
             raise ValueError("The parameter 'n_qubits' to the method \"ghz_state()\" must be an INTEGER, not a decimal or string.")
         if n_qubits < 1:
             raise ValueError(f"The parameter 'n_qubits' to the method \"ghz_state()\" must be a POSITIVE INTEGER. Instead, I got '{n_qubits}'")
