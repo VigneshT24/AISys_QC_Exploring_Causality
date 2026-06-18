@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import time
 # CREATE A TEST SUITE FOR EACH OF THESE TO TEST THEM IN ORDER TO FINISH TASK 2
 
-def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, correct_answer=None):
+def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, correct_answer=None, seed=42):
     """
     Takes a circuit and evaluates it based on runtime, TVD, and Noise Rate, in addition to other metrics
 
@@ -93,7 +93,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
 
     # the stopwatch for runtime
     start_time = time.time()
-    job_result = simulator.run(transpiled_qc, shots=shots, noise_model=noise_model).result()
+    job_result = simulator.run(transpiled_qc, shots=shots, noise_model=noise_model, seed_simulator=seed).result()
     end_time = time.time()
 
     runtime = end_time - start_time

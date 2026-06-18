@@ -11,12 +11,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'TASK_2'))
 from basic_quantum_circuits import BasicQuantumCircuits as BQC
 from evaluate_circuit import evaluate_circuit, show_circuit
 
-shots_list          = [128, 512, 1024, 4096]
-optimization_levels = [0, 1, 2, 3]
-noise_rates         = [0.0, 0.001, 0.01, 0.05]
-qubit_counts        = [2, 3, 4, 5]
-depth_counts        = [1, 3, 5, 10]
-grover_targets      = {2: '11', 3: '101', 4: '1001'}
+# Expanded — more granular, better causal analysis
+shots_list          = [128, 256, 512, 1024, 2048, 4096]    
+optimization_levels = [0, 1, 2, 3]                        
+noise_rates         = [0.0, 0.001, 0.005, 0.01, 0.03, 0.05]
+qubit_counts        = [2, 3, 4, 5]                          
+depth_counts        = [1, 2, 3, 5, 7, 10, 15]   
+grover_targets      = {2: '11', 3: '101', 4: '1001'}         
 
 def build_experiments():
     """
@@ -163,7 +164,8 @@ def run_single_experiment(config):
         shots=config['shots'],
         optimization_level=config['optimization_level'],
         noise_rate=config['noise_rate'],
-        correct_answer=config['correct_answer']
+        correct_answer=config['correct_answer'],
+        seed=42
     )
 
     result['n_qubits_config'] = config['n_qubits']
