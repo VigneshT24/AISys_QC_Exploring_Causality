@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import itertools
+from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'TASK_2'))
@@ -18,6 +19,26 @@ depth_counts        = [1, 3, 5, 10]
 grover_targets      = {2: '11', 3: '101', 4: '1001'}
 
 def build_experiments():
+    """
+    Generates a flat list of every experiment configuration to run.
+
+    Combines all circuits with every combination of shots, optimization level,
+    noise rate, qubit count, and depth using itertools.product. Each experiment
+    is represented as a dictionary containing all the parameters needed to build
+    and run a single circuit evaluation.
+
+    Args:
+        None
+
+    Returns:
+        'experiments': a list of dictionaries, where each dictionary represents
+        one unique experiment configuration containing keys: 'circuit_name',
+        'n_qubits', 'depth', 'shots', 'optimization_level', 'noise_rate',
+        and 'correct_answer'
+
+    Raises:
+        None
+    """
     experiments = []
 
     # BELL
@@ -83,6 +104,29 @@ def build_experiments():
     return experiments
 
 def run_single_experiment(config):
+    """
+    Builds and evaluates a single quantum circuit from a configuration dictionary.
+
+    Designed to be called by ProcessPoolExecutor as a parallel worker. Receives
+    one experiment config from build_experiments(), constructs the appropriate
+    circuit using BasicQuantumCircuits, and passes it to evaluate_circuit().
+    Must remain a top-level function for Python's pickle serialization to work
+    correctly with multiprocessing.
+
+    Args:
+        'config': a dictionary containing one experiment's full configuration,
+        as produced by build_experiments(). Expected keys are 'circuit_name',
+        'n_qubits', 'depth', 'shots', 'optimization_level', 'noise_rate',
+        and 'correct_answer'
+
+    Returns:
+        a dictionary of results from evaluate_circuit(), with two additional
+        keys appended: 'n_qubits_config' and 'depth_config' from the original
+        config for traceability in the final dataset
+
+    Raises:
+        ValueError: if 'circuit_name' in config does not match any known circuit
+    """
     circuit = BQC()
 
     name = config['circuit_name']
@@ -130,38 +174,34 @@ def run_single_experiment(config):
 if __name__ == "__main__":
     experiments = build_experiments()
     total = len(experiments)
-    print(f"Total experiments to run {total}")
-
     all_results = []
-    completed = 0
 
     with ProcessPoolExecutor(max_workers=4) as executor:
-
         futures = {
             executor.submit(run_single_experiment, exp): exp
             for exp in experiments
         }
 
-        for future in as_completed(futures):
-            try:
-                result = future.result()
-                all_results.append(result)
-                completed += 1
-                print(f"[{completed}/{total}] Done: {result['circuit_name']} | "
-                      f"shots={result['shots']} | "
-                      f"opt={result['optimization_level']} | "
-                      f"noise={result['noise_rate']} | "
-                      f"TVD={result['tvd']:.4f}")
+        with tqdm(total=total, desc="Running Experiments", unit="exp") as pbar:
+            for future in as_completed(futures):
+                try:
+                    result = future.result()
+                    all_results.append(result)
+
+                    pbar.set_postfix({
+                        'circuit':  result['circuit_name'],
+                        'TVD':      f"{result['tvd']:.4f}",
+                        'noise':    result['noise_rate']
+                    })
+                    pbar.update(1)
                 
-            except Exception as e:
-                failed_config = futures[future]
-                print(f"FAILED: {failed_config['circuit_name']} - {e}")
+                except Exception as e:
+                    failed = futures[future]
+                    tqdm.write(f"FAILED: {failed['circuit_name']} - {type(e).__name__}: {e}")
+                    import traceback
+                    tqdm.write(traceback.format_exc())  # full stack trace
+                    pbar.update(1)
     
     df = pd.DataFrame(all_results)
     df.to_csv('experiment_results.csv', index=False)
-
-    print(f"\nFinished! {completed}/{total} experiments completed.")
-    print(f"Results saved to experiment_results.csv")
-    print(f"\nPreview:")
-    print(df.head(10))
-    print(f"\nShape: {df.shape}")
+    print(f"\n Done! {len(all_results)}/{total} experiments completed.")
