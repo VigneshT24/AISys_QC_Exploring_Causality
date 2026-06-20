@@ -1,4 +1,6 @@
 from qiskit import QuantumCircuit
+import matplotlib.pyplot as plt
+import numpy as np
 
 class BasicQuantumCircuits():
     """
@@ -194,23 +196,26 @@ class BasicQuantumCircuits():
         
         qc = QuantumCircuit(n_qubits)
 
-        # method that adds depth to a single qubit
-        def sqdi(qubit, depth, switch_order):
-            for iter in range(depth):
-                if not switch_order:
-                    if (iter % 2) == 0:
-                        qc.h(qubit)
-                    else:
-                        qc.x(qubit)
-                else:
-                    if (iter % 2) != 0:
-                        qc.x(qubit)
-                    else:
-                        qc.h(qubit)
-
-        switch_order = False
-        for i in range(n_qubits):
-            sqdi(i, depth, switch_order)
-            switch_order = not(switch_order)
+        for dep in range(depth):
+            for qb in range(n_qubits):
+                qc.rx(np.pi / 8, qb)
+            
+            for qb in range(n_qubits - 1):
+                qc.cx(qb, qb + 1)
+            qc.barrier()
 
         return qc
+    
+
+def show_circuit(qc):
+    print("Circuit Image:")
+    qc.draw('mpl')
+    plt.show()
+
+circuit = BasicQuantumCircuits()
+
+# show_circuit(circuit.bell_state_circuit())
+# show_circuit(circuit.ghz_state_circuit(4))
+# show_circuit(circuit.grover_circuit(2, '11'))
+# show_circuit(circuit.parameterized_circuit(1, [('rx', 0.5)]))
+# show_circuit(circuit.variable_depth_circuit(3, 3))
