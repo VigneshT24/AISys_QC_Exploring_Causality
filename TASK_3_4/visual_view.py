@@ -2,8 +2,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+"""
+When you run this file, it will give you 10 different matplotlib visual charts: either [box plots] or [line plots with confidence intervals].
+
+This data is from the 'experiment_results.csv' file, which contains ~1300 data. Most of the generated charts (except some)
+are the result of averaging the results of the data from 'experiment_results.csv'. The other charts use the raw data.
+"""
+
 df = pd.read_csv('experiment_results.csv', dtype={'top_state': str})
 df['two_qubit_ratio'] = (df['count_2q'] / (df['count_1q'] + df['count_2q'])).round(2)
+
+# averaging the results after 'repeat' for more normalized data result
+grouping_cols = ['circuit_name', 'shots', 'optimization_level', 'noise_rate', 
+                  'n_qubits_config', 'depth_config']
+
+df_averaged = df.groupby(grouping_cols, as_index=False)['tvd'].mean()
 
 sns.set_style('whitegrid')
 
@@ -19,7 +32,7 @@ def clean_lineplot_multi(data, x, y, hue, title, xlabel, ylabel):
     plt.title(title, fontsize=13)
     plt.xlabel(xlabel, fontsize=11)
     plt.ylabel(ylabel, fontsize=11)
-    plt.legend(title=None, fontsize=9, loc='best')
+    plt.legend(title=None, fontsize=9, loc='upper left', bbox_to_anchor=(1.02, 1))
     plt.tight_layout()
     plt.show()
 
@@ -125,7 +138,6 @@ for ax, bucket in zip(axes, bucket_order):
     ax.set_ylabel('TVD' if bucket == bucket_order[0] else '')
 
 fig.suptitle('Variable Depth: TVD vs Circuit Depth, by Noise Level', fontsize=14)
-# plt.tight_layout()
 plt.tight_layout(rect=[0, 0, 1, 0.80])
 plt.show()
 

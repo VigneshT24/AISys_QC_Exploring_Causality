@@ -4,7 +4,10 @@ import numpy as np
 import pandas as pd
 import itertools
 from tqdm import tqdm
+import itertools
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
+NUM_REPEATS = 5
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'TASK_2'))
 
@@ -42,65 +45,72 @@ def build_experiments():
     """
     experiments = []
 
-    # BELL
-    for shots, opt, noise in itertools.product(shots_list, optimization_levels, noise_rates):
-        experiments.append({
-            'circuit_name':       'Bell',
-            'n_qubits':           2,
-            'depth':              None,
-            'shots':              shots,
-            'optimization_level': opt,
-            'noise_rate':         noise,
-            'correct_answer':     None
-        })
+    for repeat in range(NUM_REPEATS):
 
-    # GHZ
-    for n, shots, opt, noise in itertools.product(qubit_counts, shots_list, optimization_levels, noise_rates):
-        experiments.append({
-            'circuit_name':       'GHZ',
-            'n_qubits':           n,
-            'depth':              None,
-            'shots':              shots,
-            'optimization_level': opt,
-            'noise_rate':         noise,
-            'correct_answer':     None
-        })
-    
-    # GROVER
-    for n, shots, opt, noise in itertools.product([2, 3, 4], shots_list, optimization_levels, noise_rates):
-        experiments.append({
-            'circuit_name':       'Grover',
-            'n_qubits':           n,
-            'depth':              None,
-            'shots':              shots,
-            'optimization_level': opt,
-            'noise_rate':         noise,
-            'correct_answer':     grover_targets[n]
-        })
+        # BELL
+        for shots, opt, noise in itertools.product(shots_list, optimization_levels, noise_rates):
+            experiments.append({
+                'circuit_name':       'Bell',
+                'n_qubits':           2,
+                'depth':              None,
+                'shots':              shots,
+                'optimization_level': opt,
+                'noise_rate':         noise,
+                'correct_answer':     None,
+                'repeat':             repeat
+            })
 
-    # PARAMETERIZED
-    for n, shots, opt, noise in itertools.product(qubit_counts, shots_list, optimization_levels, noise_rates):
-        experiments.append({
-            'circuit_name':       'Parameterized',
-            'n_qubits':           n,
-            'depth':              None,
-            'shots':              shots,
-            'optimization_level': opt,
-            'noise_rate':         noise,
-            'correct_answer':     None
-        })
-    
-    # VARIABLE DEPTH
-    for depth, shots, opt, noise in itertools.product(depth_counts, shots_list, optimization_levels, noise_rates):
-        experiments.append({
-            'circuit_name':       'Variable Depth',
-            'n_qubits':           2,
-            'depth':              depth,
-            'shots':              shots,
-            'optimization_level': opt,
-            'noise_rate':         noise,
-            'correct_answer':     None
-        })
+        # GHZ
+        for n, shots, opt, noise in itertools.product(qubit_counts, shots_list, optimization_levels, noise_rates):
+            experiments.append({
+                'circuit_name':       'GHZ',
+                'n_qubits':           n,
+                'depth':              None,
+                'shots':              shots,
+                'optimization_level': opt,
+                'noise_rate':         noise,
+                'correct_answer':     None,
+                'repeat':             repeat
+            })
+        
+        # GROVER
+        for n, shots, opt, noise in itertools.product([2, 3, 4], shots_list, optimization_levels, noise_rates):
+            experiments.append({
+                'circuit_name':       'Grover',
+                'n_qubits':           n,
+                'depth':              None,
+                'shots':              shots,
+                'optimization_level': opt,
+                'noise_rate':         noise,
+                'correct_answer':     grover_targets[n],
+                'repeat':             repeat
+            })
+
+        # PARAMETERIZED
+        for n, shots, opt, noise in itertools.product(qubit_counts, shots_list, optimization_levels, noise_rates):
+            experiments.append({
+                'circuit_name':       'Parameterized',
+                'n_qubits':           n,
+                'depth':              None,
+                'shots':              shots,
+                'optimization_level': opt,
+                'noise_rate':         noise,
+                'correct_answer':     None,
+                'repeat':             repeat
+            })
+        
+        # VARIABLE DEPTH
+        for depth, shots, opt, noise in itertools.product(depth_counts, shots_list, optimization_levels, noise_rates):
+            experiments.append({
+                'circuit_name':       'Variable Depth',
+                'n_qubits':           2,
+                'depth':              depth,
+                'shots':              shots,
+                'optimization_level': opt,
+                'noise_rate':         noise,
+                'correct_answer':     None,
+                'repeat':             repeat
+            })
 
     return experiments
 
@@ -165,11 +175,12 @@ def run_single_experiment(config):
         optimization_level=config['optimization_level'],
         noise_rate=config['noise_rate'],
         correct_answer=config['correct_answer'],
-        seed=42
+        seed=config['repeat']
     )
 
     result['n_qubits_config'] = config['n_qubits']
     result['depth_config']    = config['depth']
+    result['repeat'] =          config['repeat']
 
     return result
 
