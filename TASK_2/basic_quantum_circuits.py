@@ -205,17 +205,3 @@ class BasicQuantumCircuits():
             qc.barrier()
 
         return qc
-    
-
-def show_circuit(qc):
-    print("Circuit Image:")
-    qc.draw('mpl')
-    plt.show()
-
-circuit = BasicQuantumCircuits()
-
-# show_circuit(circuit.bell_state_circuit())
-# show_circuit(circuit.ghz_state_circuit(4))
-# show_circuit(circuit.grover_circuit(2, '11'))
-# show_circuit(circuit.parameterized_circuit(1, [('rx', 0.5)]))
-# show_circuit(circuit.variable_depth_circuit(3, 3))
