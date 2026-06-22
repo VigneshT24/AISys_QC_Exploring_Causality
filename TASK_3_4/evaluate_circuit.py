@@ -5,8 +5,7 @@ from qiskit.quantum_info import Statevector
 from qiskit_aer.noise import NoiseModel, depolarizing_error
 import matplotlib.pyplot as plt
 import time
-# CREATE A TEST SUITE FOR EACH OF THESE TO TEST THEM IN ORDER TO FINISH TASK 2
-# Check other metrics than TVD
+# Check other metrics than TVD (runtime, success probability, transpiled depth)
 # Bar Charts -> Box Plot & Line Graphs -> Line Graph with Confidence Intervals
 
 def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, correct_answer=None, seed=42):
