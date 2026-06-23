@@ -5,10 +5,8 @@ from qiskit.quantum_info import Statevector
 from qiskit_aer.noise import NoiseModel, depolarizing_error
 import matplotlib.pyplot as plt
 import time
-# Check other metrics than TVD (runtime, success probability, transpiled depth)
-# Bar Charts -> Box Plot & Line Graphs -> Line Graph with Confidence Intervals
 
-def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, correct_answer=None, seed=42):
+def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, correct_answer=None, seed=42) -> dict:
     """
     Takes a circuit and evaluates it based on runtime, TVD, and Noise Rate, in addition to other metrics
 
@@ -69,11 +67,11 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
         noise_model = NoiseModel()
         error_1q = depolarizing_error(noise_rate, 1)
         error_2q = depolarizing_error(noise_rate * 2, 2)
-        noise_model.add_all_qubit_quantum_error(error_1q, ['h', 'x', 'rx', 'ry', 'rz'])
-        noise_model.add_all_qubit_quantum_error(error_2q, ['cx', 'cz'])
+        noise_model.add_all_qubit_quantum_error(error_1q, ['u'])
+        noise_model.add_all_qubit_quantum_error(error_2q, ['cx'])
 
     # transpile circuit for the simulator 
-    transpiled_qc = transpile(qc, simulator, optimization_level=optimization_level)
+    transpiled_qc = transpile(qc, simulator, optimization_level=optimization_level, basis_gates=['cx', 'u'])
 
     # extract static metrics
     depth = transpiled_qc.depth()
@@ -86,6 +84,11 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     count_2q = 0
 
     two_qubit_gates = ['cx', 'cz', 'cp', 'swap']
+    multi_qubit_gates = ['ccx', 'mcx', 'mcz', 'mcp']
+
+    count_1q = 0
+    count_2q = 0
+
     for gate_name, count in ops.items():
         if gate_name in two_qubit_gates:
             count_2q += count
@@ -140,8 +143,3 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     }
 
     return output_metrics
-
-def show_circuit(qc):
-    print("Circuit Image:")
-    qc.draw('mpl')
-    plt.show()

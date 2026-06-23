@@ -6,15 +6,19 @@ import itertools
 from tqdm import tqdm
 import itertools
 from concurrent.futures import ProcessPoolExecutor, as_completed
+import warnings
 
-NUM_REPEATS = 5
+warnings.filterwarnings('ignore', category=UserWarning, module='qiskit')
+
+NUM_GENERAL_REPEATS = 5
+VARIABLE_DEPTH_REPEATS = 1
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'TASK_2'))
 
 from basic_quantum_circuits import BasicQuantumCircuits as BQC
-from evaluate_circuit import evaluate_circuit, show_circuit
+from evaluate_circuit import evaluate_circuit
 
-# Expanded — more granular, better causal analysis
+# list of all possible variables to run the experiment for a holistic result
 shots_list          = [128, 256, 512, 1024, 2048, 4096]    
 optimization_levels = [0, 1, 2, 3]                        
 noise_rates         = [0.0, 0.001, 0.005, 0.01, 0.03, 0.05]
@@ -45,8 +49,8 @@ def build_experiments():
     """
     experiments = []
 
-    for repeat in range(NUM_REPEATS):
-
+    # loop only for all circuits except "variable_depth" circuit
+    for repeat in range(NUM_GENERAL_REPEATS):
         # BELL
         for shots, opt, noise in itertools.product(shots_list, optimization_levels, noise_rates):
             experiments.append({
@@ -98,12 +102,14 @@ def build_experiments():
                 'correct_answer':     None,
                 'repeat':             repeat
             })
-        
+    
+    # special loop for "variable_depth" circuit, since 5 repeats is a lot for variable_depth
+    for repeat in range(VARIABLE_DEPTH_REPEATS):
         # VARIABLE DEPTH
-        for depth, shots, opt, noise in itertools.product(depth_counts, shots_list, optimization_levels, noise_rates):
+        for n, depth, shots, opt, noise in itertools.product(qubit_counts, depth_counts, shots_list, optimization_levels, noise_rates):
             experiments.append({
                 'circuit_name':       'Variable Depth',
-                'n_qubits':           2,
+                'n_qubits':           n,
                 'depth':              depth,
                 'shots':              shots,
                 'optimization_level': opt,
@@ -166,7 +172,6 @@ def run_single_experiment(config):
             n_qubits=config['n_qubits'],
             depth=config['depth']
         )
-
     
     result = evaluate_circuit(
         circuit_name=config['circuit_name'],

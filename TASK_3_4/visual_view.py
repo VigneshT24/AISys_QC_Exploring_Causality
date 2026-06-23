@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 """
-When you run this file, it will give you 10 different matplotlib visual charts: either [box plots] or [line plots with confidence intervals].
+When you run this file, it will give you 12 different matplotlib visual charts: either [box plots] or [line plots with confidence intervals].
 
-This data is from the 'experiment_results.csv' file, which contains ~1300 data. Most of the generated charts (except some)
+This data is from the 'experiment_results.csv' file, which contains ~12000 data. Most of the generated charts (except some)
 are the result of averaging the results of the data from 'experiment_results.csv'. The other charts use the raw data.
 """
 
@@ -24,11 +24,15 @@ sns.set_style('whitegrid')
 QUBIT_VARYING = ['GHZ', 'Parameterized', 'Grover']
 
 
-def clean_lineplot_multi(data, x, y, hue, title, xlabel, ylabel):
+# ONLY UNCOMMENT OUT TO CHECK VALUE DISTRIBUTION AMONGST 5 CIRCUITS
+# print(df['circuit_name'].value_counts())
+
+def clean_lineplot_multi(data, x, y, hue, title, xlabel, ylabel, palette=None):
     """One line per hue category, each with its own shaded 95% CI band."""
     plt.figure(figsize=(9, 5.5))
     sns.lineplot(data=data, x=x, y=y, hue=hue, marker='o',
-                 errorbar='ci', linewidth=2)
+                 errorbar='ci', linewidth=2.5, markersize=8,
+                 palette=palette)
     plt.title(title, fontsize=13)
     plt.xlabel(xlabel, fontsize=11)
     plt.ylabel(ylabel, fontsize=11)
@@ -97,7 +101,6 @@ clean_lineplot_multi(
     xlabel='Optimization Level', ylabel='Transpiled Depth'
 )
 
-
 qubit_df = df[df['circuit_name'].isin(QUBIT_VARYING)]
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='tvd', hue='circuit_name',
@@ -105,12 +108,27 @@ clean_lineplot_multi(
     xlabel='Number of Qubits', ylabel='TVD'
 )
 
+qubit_df = df[df['circuit_name'].isin(['GHZ', 'Parameterized', 'Grover'])]
+clean_lineplot_multi(
+    qubit_df, x='num_qubits', y='count_2q', hue='circuit_name',
+    title='Two-Qubit Gate Count by Number of Qubits',
+    xlabel='Number of Qubits', ylabel='Count of 2-Qubit Gates'
+)
 
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='runtime', hue='circuit_name',
     title='Runtime by Number of Qubits (GHZ, Parameterized, Grover)',
     xlabel='Number of Qubits', ylabel='Runtime (seconds)'
 )
+
+plt.figure(figsize=(9, 5.5))
+sns.boxplot(data=df, x='circuit_name', y='runtime')
+plt.title('Runtime Distribution by Circuit Type, All Circuits')
+plt.xlabel('Circuit')
+plt.ylabel('Runtime (seconds)')
+plt.xticks(rotation=15)
+plt.tight_layout()
+plt.show()
 
 
 def noise_bucket(n):

@@ -3,5 +3,6 @@ __pycache__/
 .venv/
 
 experiment_results.csv
+temp.py
 
 .vscode/
