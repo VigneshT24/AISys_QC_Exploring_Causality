@@ -1,6 +1,6 @@
 # AISys: Exploring Causality in Quantum Computing Systems
 
-Research project exploring causal inference in quantum computing systems using IBM Qiskit (in Python), DoWhy, MatPlotLib, and Data Analysis.
+Project exploring causal inference in quantum computing systems using IBM Qiskit (in Python), DoWhy, MatPlotLib, and Data Analysis.
 
 ## Project Structure
 - `TASK_1/` - Qiskit learning notebooks
