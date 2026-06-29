@@ -9,6 +9,19 @@ This data is from the 'experiment_results.csv' file, which contains ~12000 data.
 are the result of averaging the results of the data from 'experiment_results.csv'. The other charts use the raw data.
 """
 
+
+df = pd.read_csv('experiment_results.csv')
+
+# print(df['num_qubits'].min(), df['num_qubits'].max())
+# print(df['depth'].min(), df['depth'].max())
+# print(df['count_2q'].min(), df['count_2q'].max())
+
+# df['depth_bin'] = pd.cut(df['depth'], bins=5)
+# df['count_2q_bin'] = pd.cut(df['count_2q'], bins=5)
+
+# grouped = df.groupby(['depth_bin', 'count_2q_bin', 'num_qubits'])['tvd'].mean()
+# print(grouped)
+
 df = pd.read_csv('experiment_results.csv', dtype={'top_state': str})
 df['two_qubit_ratio'] = (df['count_2q'] / (df['count_1q'] + df['count_2q'])).round(2)
 
@@ -113,6 +126,12 @@ clean_lineplot_multi(
     qubit_df, x='num_qubits', y='count_2q', hue='circuit_name',
     title='Two-Qubit Gate Count by Number of Qubits',
     xlabel='Number of Qubits', ylabel='Count of 2-Qubit Gates'
+)
+
+clean_lineplot_multi(
+    df, x='optimization_level', y='count_2q', hue='circuit_name',
+    title='Two-Qubit Gate Count by Optimization Level, All Circuits',
+    xlabel='Optimization Level', ylabel='Count of 2-Qubit Gates'
 )
 
 clean_lineplot_multi(
