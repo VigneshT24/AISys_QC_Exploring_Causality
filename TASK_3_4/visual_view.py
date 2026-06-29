@@ -9,19 +9,6 @@ This data is from the 'experiment_results.csv' file, which contains ~12000 data.
 are the result of averaging the results of the data from 'experiment_results.csv'. The other charts use the raw data.
 """
 
-
-df = pd.read_csv('experiment_results.csv')
-
-# print(df['num_qubits'].min(), df['num_qubits'].max())
-# print(df['depth'].min(), df['depth'].max())
-# print(df['count_2q'].min(), df['count_2q'].max())
-
-# df['depth_bin'] = pd.cut(df['depth'], bins=5)
-# df['count_2q_bin'] = pd.cut(df['count_2q'], bins=5)
-
-# grouped = df.groupby(['depth_bin', 'count_2q_bin', 'num_qubits'])['tvd'].mean()
-# print(grouped)
-
 df = pd.read_csv('experiment_results.csv', dtype={'top_state': str})
 df['two_qubit_ratio'] = (df['count_2q'] / (df['count_1q'] + df['count_2q'])).round(2)
 
@@ -33,8 +20,8 @@ df_averaged = df.groupby(grouping_cols, as_index=False)['tvd'].mean()
 
 sns.set_style('whitegrid')
 
-# circuits that actually vary qubit count (Bell and Variable Depth are fixed)
-QUBIT_VARYING = ['GHZ', 'Parameterized', 'Grover']
+# circuits that actually vary qubit count (Bell circuit qubit count is fixed)
+QUBIT_VARYING = ['GHZ', 'Parameterized', 'Grover', 'Variable Depth']
 
 
 # ONLY UNCOMMENT OUT TO CHECK VALUE DISTRIBUTION AMONGST 5 CIRCUITS
@@ -117,14 +104,14 @@ clean_lineplot_multi(
 qubit_df = df[df['circuit_name'].isin(QUBIT_VARYING)]
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='tvd', hue='circuit_name',
-    title='TVD by Number of Qubits (GHZ, Parameterized, Grover)',
+    title='TVD by Number of Qubits (All Circuits Except Bell)',
     xlabel='Number of Qubits', ylabel='TVD'
 )
 
-qubit_df = df[df['circuit_name'].isin(['GHZ', 'Parameterized', 'Grover'])]
+qubit_df = df[df['circuit_name'].isin(['GHZ', 'Parameterized', 'Grover', "Variable Depth"])]
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='count_2q', hue='circuit_name',
-    title='Two-Qubit Gate Count by Number of Qubits',
+    title='Two-Qubit Gate Count by Number of Qubits (All Circuits Except Bell)',
     xlabel='Number of Qubits', ylabel='Count of 2-Qubit Gates'
 )
 
@@ -136,8 +123,55 @@ clean_lineplot_multi(
 
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='runtime', hue='circuit_name',
-    title='Runtime by Number of Qubits (GHZ, Parameterized, Grover)',
+    title='Runtime by Number of Qubits (All Circuits Except Bell)',
     xlabel='Number of Qubits', ylabel='Runtime (seconds)'
+)
+
+# num_qubits -> depth 
+qubit_df = df[df['circuit_name'].isin(QUBIT_VARYING)]
+clean_lineplot_multi(
+    qubit_df, x='num_qubits', y='depth', hue='circuit_name',
+    title='Transpiled Depth by Number of Qubits (All Circuits Except Bell)',
+    xlabel='Number of Qubits', ylabel='Transpiled Depth'
+)
+
+# depth -> outcomes 
+clean_lineplot_single(
+    df, x='depth', y='tvd',
+    title='TVD by Transpiled Depth, All Circuits',
+    xlabel='Transpiled Depth', ylabel='TVD'
+)
+
+clean_lineplot_single(
+    df, x='depth', y='runtime',
+    title='Runtime by Transpiled Depth, All Circuits',
+    xlabel='Transpiled Depth', ylabel='Runtime (seconds)'
+)
+
+grover_df = df[df['circuit_name'] == 'Grover']
+clean_lineplot_single(
+    grover_df, x='depth', y='success_probability',
+    title='Grover: Success Probability by Transpiled Depth',
+    xlabel='Transpiled Depth', ylabel='Success Probability'
+)
+
+# count_2q -> outcomes (currently missing, all 3)
+clean_lineplot_single(
+    df, x='count_2q', y='tvd',
+    title='TVD by Two-Qubit Gate Count, All Circuits',
+    xlabel='Count of 2-Qubit Gates', ylabel='TVD'
+)
+
+clean_lineplot_single(
+    df, x='count_2q', y='runtime',
+    title='Runtime by Two-Qubit Gate Count, All Circuits',
+    xlabel='Count of 2-Qubit Gates', ylabel='Runtime (seconds)'
+)
+
+clean_lineplot_single(
+    grover_df, x='count_2q', y='success_probability',
+    title='Grover: Success Probability by Two-Qubit Gate Count',
+    xlabel='Count of 2-Qubit Gates', ylabel='Success Probability'
 )
 
 plt.figure(figsize=(9, 5.5))
