@@ -10,8 +10,8 @@ import warnings
 
 warnings.filterwarnings('ignore', category=UserWarning, module='qiskit')
 
-NUM_GENERAL_REPEATS = 5
-VARIABLE_DEPTH_REPEATS = 1
+NUM_GENERAL_REPEATS = 5 # repeat number for all circuits except "variable_depth" circuit
+VARIABLE_DEPTH_REPEATS = 1 # repeat number for only "variable_depth" circuit
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'TASK_2'))
 
@@ -47,6 +47,7 @@ def build_experiments():
     Raises:
         None
     """
+    # list of all experiments results
     experiments = []
 
     # loop only for all circuits except "variable_depth" circuit
@@ -190,6 +191,7 @@ def run_single_experiment(config):
     return result
 
 if __name__ == "__main__":
+    """Build and execute the experiments, then save it to csv file called 'experiment_results.csv'"""
     experiments = build_experiments()
     total = len(experiments)
     all_results = []

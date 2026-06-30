@@ -50,8 +50,6 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
         if len(correct_answer) != qc.num_qubits:
             raise ValueError(f"The value entered for 'correct_answer' parameter length ({len(correct_answer)}) must match "
                              f"the circuit qubit count ({qc.num_qubits})")
-
-    # print(f"------Evalutating {circuit_name}------")
     
     # calculate the ideal probabilities
     ideal_probs = Statevector(qc).probabilities_dict()
@@ -59,6 +57,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     # add measurement so the simulator can actually run
     qc.measure_all()
 
+    # use AerSimulator
     simulator = AerSimulator()
     
     # adding noise model for noise detection
@@ -70,13 +69,13 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
         noise_model.add_all_qubit_quantum_error(error_1q, ['u'])
         noise_model.add_all_qubit_quantum_error(error_2q, ['cx'])
 
-    # transpile circuit for the simulator 
+    # transpile circuit for the simulator
+    # convert all gates to either be 'u' or 'cx' for simplicity (one-qubit vs two-qubit gate)
     transpiled_qc = transpile(qc, simulator, optimization_level=optimization_level, basis_gates=['cx', 'u'])
 
     # extract static metrics
     depth = transpiled_qc.depth()
     num_qubits = transpiled_qc.num_qubits
-    num_parameters = transpiled_qc.num_parameters
 
     # sort the gate counts into 1-qubit or 2-qubit groups
     ops = transpiled_qc.count_ops()
@@ -84,10 +83,6 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     count_2q = 0
 
     two_qubit_gates = ['cx', 'cz', 'cp', 'swap']
-    multi_qubit_gates = ['ccx', 'mcx', 'mcz', 'mcp']
-
-    count_1q = 0
-    count_2q = 0
 
     for gate_name, count in ops.items():
         if gate_name in two_qubit_gates:
@@ -100,6 +95,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     job_result = simulator.run(transpiled_qc, shots=shots, noise_model=noise_model, seed_simulator=seed).result()
     end_time = time.time()
 
+    # calculating runtime
     runtime = end_time - start_time
 
     # get raw counts and convert them to measured probabilities
@@ -113,6 +109,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     all_states = set(ideal_probs.keys()).union(set(measured_probs.keys()))
     tvd = 0.0
 
+    # calculate TVD
     for state in all_states:
         ideal_val = ideal_probs.get(state, 0.0)
         measured_val = measured_probs.get(state, 0.0)
@@ -127,6 +124,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     if correct_answer is not None:
         success_prob = measured_probs.get(correct_answer, 0.0)
 
+    # make a returnable dictionary
     output_metrics = {
         'circuit_name':         circuit_name,
         'shots':                shots,

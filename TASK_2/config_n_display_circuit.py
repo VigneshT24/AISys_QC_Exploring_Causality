@@ -3,6 +3,7 @@ from basic_quantum_circuits import BasicQuantumCircuits
 import numpy as np
 
 def show_circuit(circuit_name, qc):
+    """Prints the circuit in color using matplotlib's pyplot"""
     print(f"{circuit_name}: ")
     qc.draw('mpl')
     plt.show()
@@ -28,6 +29,7 @@ inp = input("Which Circuit Do You Want To Configure & Display? (type the corresp
             "Variable Depth Circuit - 5\n" \
             "\n:")
 
+# for an intuitive experiences, added conditional statements and way for user to configure in terminal (and in Steamlit)
 match inp.strip().lower():
     case "1":
         print("You chose Bell State Circuit. Since you cannot configure this circuit, it will be displayed as is.")
@@ -71,4 +73,4 @@ match inp.strip().lower():
         depth = input("Now, enter the depth level (a number between 1 to 10) to configure this circuit with: ")
         show_circuit("Variable Depth Circuit", circuit.variable_depth_circuit(int(num_qubits), int(depth)))
     case _:
-        raise ValueError("Not valid input. Please enter a number between 1 - 5, corresponding to which circuit you want to display.")
+        raise ValueError("Not a valid input. Please enter a number between 1 - 5, corresponding to which circuit you want to display.")

@@ -14,7 +14,7 @@ df['two_qubit_ratio'] = (df['count_2q'] / (df['count_1q'] + df['count_2q'])).rou
 
 # averaging the results after 'repeat' for more normalized data result
 grouping_cols = ['circuit_name', 'shots', 'optimization_level', 'noise_rate', 
-                  'n_qubits_config', 'depth_config']
+                  'num_qubits', 'depth_config']
 
 df_averaged = df.groupby(grouping_cols, as_index=False)['tvd'].mean()
 
@@ -24,11 +24,7 @@ sns.set_style('whitegrid')
 QUBIT_VARYING = ['GHZ', 'Parameterized', 'Grover', 'Variable Depth']
 
 
-# ONLY UNCOMMENT OUT TO CHECK VALUE DISTRIBUTION AMONGST 5 CIRCUITS
-# print(df['circuit_name'].value_counts())
-
 def clean_lineplot_multi(data, x, y, hue, title, xlabel, ylabel, palette=None):
-    """One line per hue category, each with its own shaded 95% CI band."""
     plt.figure(figsize=(9, 5.5))
     sns.lineplot(data=data, x=x, y=y, hue=hue, marker='o',
                  errorbar='ci', linewidth=2.5, markersize=8,
@@ -73,34 +69,35 @@ def clean_boxplot_single(data, x, y, title, xlabel, ylabel, color='#4472C4'):
     plt.tight_layout()
     plt.show()
 
-
+# Chart 1
 clean_lineplot_multi(
     df, x='noise_rate', y='tvd', hue='circuit_name',
     title='TVD by Noise Rate, All Circuits',
     xlabel='Noise Rate', ylabel='TVD'
 )
 
-
+# Chart 2
 clean_lineplot_multi(
     df, x='optimization_level', y='tvd', hue='circuit_name',
     title='TVD by Optimization Level, All Circuits',
     xlabel='Optimization Level', ylabel='TVD'
 )
 
-
+# Chart 3
 clean_lineplot_multi(
     df, x='shots', y='tvd', hue='circuit_name',
     title='TVD Stability by Shot Count, All Circuits',
     xlabel='Number of Shots', ylabel='TVD'
 )
 
-
+# Chart 4
 clean_lineplot_multi(
     df, x='optimization_level', y='depth', hue='circuit_name',
     title='Transpiled Depth by Optimization Level, All Circuits',
     xlabel='Optimization Level', ylabel='Transpiled Depth'
 )
 
+# Chart 5
 qubit_df = df[df['circuit_name'].isin(QUBIT_VARYING)]
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='tvd', hue='circuit_name',
@@ -108,46 +105,74 @@ clean_lineplot_multi(
     xlabel='Number of Qubits', ylabel='TVD'
 )
 
-qubit_df = df[df['circuit_name'].isin(['GHZ', 'Parameterized', 'Grover', "Variable Depth"])]
-clean_lineplot_multi(
-    qubit_df, x='num_qubits', y='count_2q', hue='circuit_name',
-    title='Two-Qubit Gate Count by Number of Qubits (All Circuits Except Bell)',
-    xlabel='Number of Qubits', ylabel='Count of 2-Qubit Gates'
-)
 
+# Chart 6
+qubit_df = df[df['circuit_name'].isin(QUBIT_VARYING)]
+
+plt.figure(figsize=(9, 5.5))
+ax = sns.lineplot(data=qubit_df, x='num_qubits', y='count_2q', hue='circuit_name',
+                  marker='o', errorbar='ci', linewidth=2.5, markersize=8)
+
+ax.lines[0].set_linewidth(5)
+ax.lines[0].set_markersize(14)
+ax.lines[0].set_linestyle('dashdot')
+
+plt.title('Two-Qubit Gate Count by Number of Qubits (All Circuits Except Bell)')
+plt.xlabel('Number of Qubits')
+plt.ylabel('Count of 2-Qubit Gates')
+plt.legend(title=None, fontsize=9)
+plt.tight_layout()
+plt.show()
+
+
+# Chart 7
 clean_lineplot_multi(
     df, x='optimization_level', y='count_2q', hue='circuit_name',
     title='Two-Qubit Gate Count by Optimization Level, All Circuits',
     xlabel='Optimization Level', ylabel='Count of 2-Qubit Gates'
 )
 
+# Chart 8
 clean_lineplot_multi(
     qubit_df, x='num_qubits', y='runtime', hue='circuit_name',
     title='Runtime by Number of Qubits (All Circuits Except Bell)',
     xlabel='Number of Qubits', ylabel='Runtime (seconds)'
 )
 
-# num_qubits -> depth 
+# Chart 9
 qubit_df = df[df['circuit_name'].isin(QUBIT_VARYING)]
-clean_lineplot_multi(
-    qubit_df, x='num_qubits', y='depth', hue='circuit_name',
-    title='Transpiled Depth by Number of Qubits (All Circuits Except Bell)',
-    xlabel='Number of Qubits', ylabel='Transpiled Depth'
-)
 
-# depth -> outcomes 
+plt.figure(figsize=(9, 5.5))
+ax = sns.lineplot(data=qubit_df, x='num_qubits', y='depth', hue='circuit_name',
+                  marker='o', errorbar='ci', linewidth=2.5, markersize=8)
+
+ax.lines[0].set_linewidth(6)
+ax.lines[0].set_markersize(12)
+ax.lines[0].set_linestyle('dashdot')
+
+plt.title('Transpiled Depth by Number of Qubits (All Circuits Except Bell)')
+plt.xlabel('Number of Qubits')
+plt.ylabel('Transpiled Depth')
+plt.legend(title=None, fontsize=9)
+plt.tight_layout()
+plt.show()
+
+
+# Chart 10
 clean_lineplot_single(
     df, x='depth', y='tvd',
     title='TVD by Transpiled Depth, All Circuits',
     xlabel='Transpiled Depth', ylabel='TVD'
 )
 
+# Chart 11
 clean_lineplot_single(
     df, x='depth', y='runtime',
     title='Runtime by Transpiled Depth, All Circuits',
     xlabel='Transpiled Depth', ylabel='Runtime (seconds)'
 )
 
+# Chart 12
 grover_df = df[df['circuit_name'] == 'Grover']
 clean_lineplot_single(
     grover_df, x='depth', y='success_probability',
@@ -155,25 +180,28 @@ clean_lineplot_single(
     xlabel='Transpiled Depth', ylabel='Success Probability'
 )
 
-# count_2q -> outcomes (currently missing, all 3)
+# Chart 13
 clean_lineplot_single(
     df, x='count_2q', y='tvd',
     title='TVD by Two-Qubit Gate Count, All Circuits',
     xlabel='Count of 2-Qubit Gates', ylabel='TVD'
 )
 
+# Chart 14
 clean_lineplot_single(
     df, x='count_2q', y='runtime',
     title='Runtime by Two-Qubit Gate Count, All Circuits',
     xlabel='Count of 2-Qubit Gates', ylabel='Runtime (seconds)'
 )
 
+# Chart 15
 clean_lineplot_single(
     grover_df, x='count_2q', y='success_probability',
     title='Grover: Success Probability by Two-Qubit Gate Count',
     xlabel='Count of 2-Qubit Gates', ylabel='Success Probability'
 )
 
+# Chart 16
 plt.figure(figsize=(9, 5.5))
 sns.boxplot(data=df, x='circuit_name', y='runtime')
 plt.title('Runtime Distribution by Circuit Type, All Circuits')
@@ -184,6 +212,7 @@ plt.tight_layout()
 plt.show()
 
 
+# Chart 17
 def noise_bucket(n):
     if n <= 0.001:
         return 'Low (≤0.001)'
@@ -213,6 +242,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.80])
 plt.show()
 
 
+# Chart 18
 grover_df = df[df['circuit_name'] == 'Grover']
 clean_boxplot_single(
     grover_df, x='noise_rate', y='success_probability',
@@ -220,7 +250,7 @@ clean_boxplot_single(
     xlabel='Noise Rate', ylabel='Success Probability'
 )
 
-
+# Chart 19
 clean_boxplot_multi(
     df, x='noise_rate', y='tvd', hue='circuit_name',
     title='TVD Distribution by Noise Rate, All Circuits',
@@ -238,6 +268,7 @@ def clean_boxplot_multi(data, x, y, hue, title, xlabel, ylabel, palette=None):
     plt.tight_layout()
     plt.show()
 
+# Chart 20
 grover_df = df[df['circuit_name'] == 'Grover']
 clean_boxplot_multi(
     grover_df, x='noise_rate', y='success_probability', hue='optimization_level',

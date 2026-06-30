@@ -1,70 +1,103 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-dg = nx.DiGraph()
 
-# SHOTS
-dg.add_edges_from([("shots", "TVD")])
+def get_nx(only_sp=False):
+    """Generate the causal graph using NetworkX, to be fed into DoWhy for Analysis"""
+    dg = nx.DiGraph()
 
-# OPTIMIZATION LEVEL
-dg.add_edges_from([("optimization_level", "depth")])
-dg.add_edges_from([("optimization_level", "count_2q")])
+    ## W/O SUCCESS_PROBABILITY ##
+    if not only_sp:
+        # SHOTS
+        dg.add_edges_from([("shots", "tvd")])
 
-# NOISE RATE
-dg.add_edges_from([("noise_rate", "TVD")])
-dg.add_edges_from([("noise_rate", "success_probability")])
+        # OPTIMIZATION LEVEL
+        dg.add_edges_from([("optimization_level", "depth")])
+        dg.add_edges_from([("optimization_level", "count_2q")])
 
-# NUM_QUBITS
-dg.add_edges_from([("num_qubits", "depth")])
-dg.add_edges_from([("num_qubits", "count_2q")])
-dg.add_edges_from([("num_qubits", "TVD")])
-dg.add_edges_from([("num_qubits", "runtime")])
+        # NOISE RATE
+        dg.add_edges_from([("noise_rate", "tvd")])
 
-# CIRCUIT_NAME
-dg.add_edges_from([("circuit_name", "depth")])
-dg.add_edges_from([("circuit_name", "count_2q")])
-dg.add_edges_from([("circuit_name", "success_probability")])
+        # NUM_QUBITS
+        dg.add_edges_from([("num_qubits", "depth")])
+        dg.add_edges_from([("num_qubits", "count_2q")])
+        dg.add_edges_from([("num_qubits", "tvd")])
+        dg.add_edges_from([("num_qubits", "runtime")])
 
-# MEDIATOR: DEPTH
-dg.add_edges_from([("depth", "TVD")])
-dg.add_edges_from([("depth", "runtime")])
-dg.add_edges_from([("depth", "success_probability")])
+        # CIRCUIT_NAME
+        dg.add_edges_from([("circuit_name", "depth")])
+        dg.add_edges_from([("circuit_name", "count_2q")])
 
-# MEDIATOR: COUNT_2Q
-dg.add_edges_from([("count_2q", "TVD")])
-dg.add_edges_from([("count_2q", "runtime")])
-dg.add_edges_from([("count_2q", "success_probability")])
+        # MEDIATOR: DEPTH
+        dg.add_edges_from([("depth", "tvd")])
+        dg.add_edges_from([("depth", "runtime")])
 
-plt.figure(figsize=(10, 5))
+        # MEDIATOR: COUNT_2Q
+        dg.add_edges_from([("count_2q", "tvd")])
+        dg.add_edges_from([("count_2q", "runtime")])
 
-pos = {
-    # causal variables
-    "shots": (0, 4),
-    "num_qubits": (0, 3),
-    "optimization_level": (0, 2),
-    "noise_rate": (0, 1),
-    "circuit_name": (0, 0),
+    ## W/ SUCCESS_PROBABILITY ONLY ##
+    else:
+        dg.add_edges_from([("noise_rate", "success_probability")])
+        
+        # REMOVED THIS EDGE, SINCE CIRCUIT_NAME WILL ALWAYS BE "grover" IN THIS CASE
+        # dg.add_edges_from([("circuit_name", "success_probability")])
 
-    # mediators
-    "depth": (1, 1),
-    "count_2q": (1, 0),
 
-    # output metrics
-    "runtime": (2, 2),
-    "TVD": (2, 1),
-    "success_probability": (2, 0)
-}
+        dg.add_edges_from([("depth", "success_probability")])
+        dg.add_edges_from([("count_2q", "success_probability")])
 
-nx.draw(
-    dg,
-    pos=pos,
-    with_labels=True,
-    node_color="red",
-    node_size=2000,
-    font_size=10,
-    font_weight="bold",
-    arrowsize=20,
-    edge_color="blue"
-)
+    return dg
 
-plt.show()
+
+if __name__ == "__main__":
+
+    # generate two different graphs, one with and the other without success_probability
+    graph_1 = get_nx(only_sp=False)
+    graph_2 = get_nx(only_sp=True)
+
+    plt.figure(figsize=(10, 5))
+
+    pos = {
+        # causal variables
+        "shots": (0, 4),
+        "num_qubits": (0, 3),
+        "optimization_level": (0, 2),
+        "noise_rate": (0, 1),
+        "circuit_name": (0, 0),
+
+        # mediators
+        "depth": (1, 1),
+        "count_2q": (1, 0),
+
+        # output metrics
+        "runtime": (2, 2),
+        "tvd": (2, 1),
+        "success_probability": (2, 0)
+    }
+
+    nx.draw(
+        graph_1,
+        pos=pos,
+        with_labels=True,
+        node_color="red",
+        node_size=2000,
+        font_size=10,
+        font_weight="bold",
+        arrowsize=20,
+        edge_color="blue"
+    )
+
+    nx.draw(
+        graph_2,
+        pos=pos,
+        with_labels=True,
+        node_color="red",
+        node_size=2000,
+        font_size=10,
+        font_weight="bold",
+        arrowsize=20,
+        edge_color="blue"
+    )
+
+    plt.show()
