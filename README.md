@@ -6,7 +6,7 @@ Project exploring causal inference in quantum computing systems using IBM Qiskit
 - `TASK_1/` - Qiskit learning notebooks
 - `TASK_2/` - Quantum benchmark circuit library
 - `TASK_3_4/` - Experiment runner and metrics evaluation
-- `TASK_5/` - Constructing Causal Models
+- `TASK_5/` - Constructing Causal Models, with explanations
 
 ## Setup
 
