@@ -49,6 +49,37 @@ def get_nx(only_sp=False):
 
     return dg
 
+def draw_nx(only_sp=False):
+    graph = get_nx(only_sp=only_sp)
+    
+    if not only_sp:
+        pos = {
+            "shots": (0, 4),
+            "num_qubits": (0, 3),
+            "optimization_level": (0, 2),
+            "noise_rate": (0, 1),
+            "circuit_name": (0, 0),
+            "depth": (1, 1),
+            "count_2q": (1, 0),
+            "runtime": (2, 2),
+            "tvd": (2, 1),
+            "success_probability": (2, 0)
+        }
+    else:
+        pos = {
+            "noise_rate": (0, 2),
+            "depth": (0, 1),
+            "count_2q": (0, 0),
+            "success_probability": (1, 1)
+        }
+    
+    plt.figure(figsize=(10, 5))
+    nx.draw(graph, pos=pos, with_labels=True, node_color="red",
+            node_size=2000, font_size=10, font_weight="bold",
+            arrowsize=20, edge_color="blue")
+    plt.margins(x=0.2, y=0.1)
+    plt.show()
+
 
 if __name__ == "__main__":
 
