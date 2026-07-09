@@ -31,3 +31,4 @@ This generates `experiment_results.csv` with ~2736 experiment results.
 
 ## Mentors
 - Pooyan Jamshidi, University of South Carolina
+- Mohammad Ali Javidian, Appalachian State University
