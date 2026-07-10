@@ -13,7 +13,7 @@ analysis using DoWhy's graphical causal model (GCM) module.
 - `TASK_5/` - Constructing Causal Models, with explanations
 - `TASK_6/` - Conducting DoWhy Causal and Counterfactual Analysis
 - `TASK_7/` - Streamlit Tool
-- `TASK_8/` - Final Report & Poster Presentation
+- `TASK_8/` - Final Report
 
 ## Setup
 
