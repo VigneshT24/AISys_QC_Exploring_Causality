@@ -260,7 +260,7 @@ with tab4:
             st.info(f"{circuit} circuit is not one of the 5 benchmark circuit you can test.")
 
         if qc is not None:
-            fig = qc.draw(output='mpl', style={'dpi': 1200})
+            fig = qc.draw(output='mpl', style={'dpi': 150})
             st.pyplot(fig)
     else:
         st.info("No matching configuration to build a circuit diagram for.")
