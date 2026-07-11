@@ -151,7 +151,9 @@ with tab2:
     st.subheader("Causal Graph")
     st.caption("Nodes represent workflow configurations, mediators, and outcomes. " \
                 "Edges represent modeled causal relationships.")
-    st.image("..\CAUSAL_GRAPH\Causal_Graph.png")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    graph_path = os.path.join(current_dir, "..", "CAUSAL_GRAPH", "Causal_Graph.png")
+    st.image(graph_path)
 
 with tab3:
     st.subheader("Counterfactual Analysis")
