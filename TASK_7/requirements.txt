@@ -4,3 +4,6 @@ networkx
 matplotlib
 dowhy
 scikit-learn
+sclearn-ensemble
+qiskit
+altair

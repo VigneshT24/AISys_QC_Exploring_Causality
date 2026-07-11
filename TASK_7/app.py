@@ -75,6 +75,9 @@ if circuit == "Grover":
     if len(target) != num_qubits or not all(bit in '01' for bit in target):
         st.sidebar.error(f"Target must be exactly {num_qubits} bits, using only 0s and 1s.")
         target = default_targets.get(num_qubits, '1' * num_qubits)
+    st.sidebar.caption("Target state affects the illustrative circuit diagram only; "
+                    "it does not filter the Data Explorer results, since dataset "
+                    "runs were recorded with a fixed default target per qubit count.")
 
 if circuit == "Parameterized":
     st.sidebar.markdown("---")
@@ -100,8 +103,11 @@ if circuit == "Variable Depth":
         "Circuit Depth",
         options=[1, 2, 3, 5, 7, 10, 15]
     )
+    st.sidebar.caption("Depth here controls the illustrative circuit diagram only; "
+                    "it does not filter the Data Explorer results, since dataset "
+                    "depth values were measured post-transpilation.")
 
-tab1, tab2, tab3, tab4 = st.tabs(["Data Explorer", "Causal Graph", "Counterfactuals", "Circuit Diagram"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Data Explorer", "Causal Graph", "Counterfactuals", "Circuit Diagram", "About"])
 
 with tab1:
     df = load_results()
@@ -139,7 +145,7 @@ with tab1:
         )
         st.altair_chart(chart, use_container_width=True)
     else:
-        st.info("No runs match the configuration that you chose. Try adjusting the filteres.")
+        st.info("No runs match the configuration that you chose. Try adjusting the filters.")
 
 with tab2:
     st.subheader("Causal Graph")
@@ -193,6 +199,41 @@ with tab3:
             unsafe_allow_html=True
         )
 
+        if circuit == "Grover" and intervention_var == "noise_rate":
+            grover_cf = gcm.counterfactual_samples(grover_model, {intervention_var: lambda x: new_value}, grover_df)
+            observed_sp = grover_df['success_probability'].mean()
+            counterfactual_sp = grover_cf['success_probability'].mean()
+
+            sp_result_df = pd.DataFrame({
+                'condition': ['Observed', f'Counterfactual ({intervention_var} = {new_value})'],
+                'success_probability': [observed_sp, counterfactual_sp]
+            })
+
+            sp_chart = alt.Chart(sp_result_df).mark_bar().encode(
+                x=alt.X('condition:N', title='', sort=None,
+                        axis=alt.Axis(labelAngle=0, labelLimit=300)),
+                y=alt.Y('success_probability:Q', title='Mean Success Probability'),
+                color=alt.Color('condition:N',
+                                scale=alt.Scale(domain=sp_result_df['condition'].tolist(),
+                                                range=['#8c1f1f', '#1f4e8c']),
+                                legend=None)
+            ).properties(height=350)
+
+            sp_text = sp_chart.mark_text(align='center', baseline='bottom', dy=-8, fontSize=13, fontWeight='bold').encode(
+                text=alt.Text('success_probability:Q', format='.4f'),
+                color=alt.value('white')
+            )
+
+            st.subheader("Grover Success Probability")
+            st.altair_chart(sp_chart + sp_text, use_container_width=True)
+
+            sp_pct_change = (counterfactual_sp - observed_sp) / observed_sp * 100
+            sp_direction = "increase" if sp_pct_change > 0 else "reduction"
+            st.markdown(
+                f"<p style='text-align: center; font-weight: bold;'>{abs(sp_pct_change):.1f}% {sp_direction} in mean success probability</p>",
+                unsafe_allow_html=True
+            )
+
 with tab4:
     st.subheader(f"{circuit} circuit ({num_qubits} qubits)")
 
@@ -203,7 +244,6 @@ with tab4:
         elif circuit == "GHZ":
             qc = circuit_builder.ghz_state_circuit(n_qubits=num_qubits)
         elif circuit == "Grover":
-            target = {2: '11', 3: '101', 4: '1001', 5: '10101'}.get(num_qubits, '1' * num_qubits)
             qc = circuit_builder.grover_circuit(n_qubits=num_qubits, target=target)
         elif circuit == "Parameterized":
             qc = circuit_builder.parameterized_circuit(n_qubits= num_qubits, axis_angles_list=angles)
@@ -218,3 +258,23 @@ with tab4:
             st.pyplot(fig)
     else:
         st.info("No matching configuration to build a circuit diagram for.")
+
+with tab5:
+    st.subheader("About This Dashboard")
+    st.markdown("""
+    This dashboard explores the existing experiment dataset (12,672 runs 
+    across 5 benchmark circuits) and reuses the causal graph and DoWhy 
+    models that were generated from this project.
+
+    **Scope note:** Further updates and features to this dashboard will be done
+    in the future. The current version of this "Exploring Causality in Quantum Computing
+    Systems" dashboard includes all the necessary features for users to explore causality
+    in quantum circuits, and explore how different configurations influence observed outcomes.
+                
+
+    **Creator**: Vignesh Thondikulam
+                
+    **Mentor**: Dr. Pooyan Jamshidi
+                
+    **Co-Mentor**: Dr. Mohammad Ali Javidian
+    """)
