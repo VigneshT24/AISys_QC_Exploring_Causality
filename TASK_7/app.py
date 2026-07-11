@@ -262,6 +262,7 @@ with tab4:
         if qc is not None:
             fig = qc.draw(output='mpl', style={'dpi': 150})
             st.pyplot(fig)
+            plt.close(fig)
     else:
         st.info("No matching configuration to build a circuit diagram for.")
 
