@@ -6,3 +6,4 @@ dowhy
 scikit-learn
 altair
 qiskit
+pylatexenc
