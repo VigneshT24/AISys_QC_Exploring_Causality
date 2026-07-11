@@ -1,8 +1,12 @@
+import matplotlib
+matplotlib.use("Agg")
+
 import streamlit as st
 import pandas as pd
 import os
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 import altair as alt
 from dowhy import gcm
 
