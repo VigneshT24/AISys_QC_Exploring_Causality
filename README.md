@@ -36,8 +36,13 @@ and performs causal and counterfactual analysis using DoWhy's graphical causal m
 
 ### Requirements
 - Python 3.11+
-- Install dependencies:
 
+First, clone the repo to VS Code:
+```bash
+git clone https://github.com/VigneshT24/AISys_QC_Exploring_Causality.git
+```
+
+Then install the dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -45,7 +50,7 @@ pip install -r requirements.txt
 ### Running the Experiment Pipeline
 To regenerate ``experiment_results.csv`` from scratch:
 
-First navigate to the root repo, then:
+First, navigate to the root repo, then:
 ```bash
 cd Task_3_4
 ```
