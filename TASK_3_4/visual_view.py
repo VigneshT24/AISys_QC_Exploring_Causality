@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 """
-When you run this file, it will give you 12 different matplotlib visual charts: either [box plots] or [line plots with confidence intervals].
+When you run this file, it will give you 20 different matplotlib visual charts: either [box plots] or [line plots with confidence intervals].
 
-This data is from the 'experiment_results.csv' file, which contains ~12000 data. Most of the generated charts (except some)
+This data is from the 'experiment_results.csv' file, which contains 12672 datas. Most of the generated charts (except some)
 are the result of averaging the results of the data from 'experiment_results.csv'. The other charts use the raw data.
 """
 

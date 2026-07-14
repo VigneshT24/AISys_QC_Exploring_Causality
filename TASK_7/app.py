@@ -1,6 +1,5 @@
 import matplotlib
 matplotlib.use("Agg")
-
 import streamlit as st
 import pandas as pd
 import os
@@ -25,6 +24,7 @@ from causal_graph import get_nx
 
 @st.cache_resource
 def get_fitted_models():
+    """Loading the causal graph to be fed into DoWhy to complete analysis"""
     graph_main = get_nx(only_sp=False)
     graph_grover = get_nx(only_sp=True)
     df = load_results()
@@ -36,7 +36,7 @@ st.set_page_config(page_title="QC Causal Explorer", layout="wide")
 st.title("Exploring Causality in Quantum Computing Systems")
 st.sidebar.header("Filters")
 
-
+# setting the UI for the side menu where you can control the causal and non-causal configurations
 st.sidebar.header("Causal Variables")
 circuit = st.sidebar.selectbox(
     "Circuit",
@@ -63,6 +63,7 @@ optimization_level = st.sidebar.select_slider(
     [0, 1, 2, 3]
 )
 
+# these are extra non-causal configurations users can play with to understand how the circuit structure changes 
 if circuit == "Grover":
     st.sidebar.markdown("---")
     st.sidebar.header("Other Configurable Parameters")
@@ -111,12 +112,12 @@ if circuit == "Variable Depth":
                     "it does not filter the Data Explorer results, since dataset "
                     "depth values were measured post-transpilation.")
 
+# initializing all the tabs for the streamlit dashboard
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["Data Explorer", "Causal Graph", "Counterfactuals", "Circuit Diagram", "About"])
 
 with tab1:
     df = load_results()
 
-    # sidebar filters
     filtered_df = df[
         (df['circuit_name'] == circuit) &
         (df['num_qubits'] == num_qubits) &
@@ -128,6 +129,7 @@ with tab1:
     st.subheader(f"Filtered results ({len(filtered_df)} runs)")
     st.dataframe(filtered_df, use_container_width=True)
 
+    # generating a table full of statistical summary
     st.subheader("Metric Summary")
     metric_cols = ['tvd', 'runtime', 'depth', 'count_2q']
     if circuit == "Grover":
@@ -136,6 +138,9 @@ with tab1:
     summary = filtered_df[metric_cols].agg(['mean', 'std', 'min', 'max']).T
     st.dataframe(summary, use_container_width=True)
 
+    # generating a output quality distribution chart using TVD
+    # the x-axis is the TVD value
+    # the y-axis is the number of runs
     st.subheader("TVD Distribution")
 
     if not filtered_df.empty:
@@ -152,6 +157,7 @@ with tab1:
         st.info("No runs match the configuration that you chose. Try adjusting the filters.")
 
 with tab2:
+    # just displaying the generated causal graph from Task 5
     st.subheader("Causal Graph")
     st.caption("Nodes represent workflow configurations, mediators, and outcomes. " \
                 "Edges represent modeled causal relationships.")
@@ -163,6 +169,8 @@ with tab3:
     st.subheader("Counterfactual Analysis")
     st.caption("Ask: what would the outcome have been if a variable has a different value?")
 
+
+    # user can intervene on noise rate and optimization level to see how these variables influence output quality (and success probability if applicable)
     intervention_var = st.selectbox("Variable to intervene on", ["noise_rate", "optimization_level"])
 
     if intervention_var == "noise_rate":
@@ -181,6 +189,7 @@ with tab3:
             'tvd': [observed_tvd, counterfactual_tvd]
         })
 
+        # generate a visual bar chart of comparing original vs. counterfactual result
         chart = alt.Chart(result_df).mark_bar().encode(
             x=alt.X('condition:N', title='', sort=None,
                     axis=alt.Axis(labelAngle=0, labelLimit=300)),
@@ -205,6 +214,7 @@ with tab3:
             unsafe_allow_html=True
         )
 
+        # special case for grover circuit if the intervene variable chosen was "noise_rate"
         if circuit == "Grover" and intervention_var == "noise_rate":
             grover_cf = gcm.counterfactual_samples(grover_model, {intervention_var: lambda x: new_value}, grover_df)
             observed_sp = grover_df['success_probability'].mean()
@@ -243,6 +253,7 @@ with tab3:
 with tab4:
     st.subheader(f"{circuit} circuit ({num_qubits} qubits)")
 
+    # dynamically updates the visual circuit as configuration choices change, helping users see how their choices influence physical hardware
     if not filtered_df.empty:
         circuit_builder = BasicQuantumCircuits()
         if circuit == "Bell":

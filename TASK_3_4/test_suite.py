@@ -18,7 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'TASK_2'))
 from basic_quantum_circuits import BasicQuantumCircuits as BQC
 from evaluate_circuit import evaluate_circuit
 
-# list of all possible variables to run the experiment for a holistic result
+# list of configuration values to iterate through
 shots_list          = [128, 256, 512, 1024, 2048, 4096]    
 optimization_levels = [0, 1, 2, 3]                        
 noise_rates         = [0.0, 0.001, 0.005, 0.01, 0.03, 0.05]
@@ -148,7 +148,8 @@ def run_single_experiment(config):
     circuit = BQC()
 
     name = config['circuit_name']
-
+    
+    # initializing the right circuit
     if name == 'Bell':
         qc = circuit.bell_state_circuit()
 
@@ -196,6 +197,7 @@ if __name__ == "__main__":
     total = len(experiments)
     all_results = []
 
+    # using parallel computing to speed up the processing
     with ProcessPoolExecutor(max_workers=4) as executor:
         futures = {
             executor.submit(run_single_experiment, exp): exp
@@ -222,6 +224,7 @@ if __name__ == "__main__":
                     tqdm.write(traceback.format_exc())  # full stack trace
                     pbar.update(1)
     
+    # save the results to the csv file to be analyzed
     df = pd.DataFrame(all_results)
     df.to_csv('experiment_results.csv', index=False)
     print(f"\n Done! {len(all_results)}/{total} experiments completed.")

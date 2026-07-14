@@ -94,6 +94,7 @@ class BasicQuantumCircuits():
                 case _:
                     raise ValueError(f"Axis must be 'rx', 'ry', or 'rz'. Instead, I got '{axis_angles_list[i][0]}'")
         
+        # entangle every qubit with the qubit prior
         for j in range(n_qubits - 1):
             qc.cx(j, j+1)
 
@@ -197,9 +198,11 @@ class BasicQuantumCircuits():
         qc = QuantumCircuit(n_qubits)
 
         for dep in range(depth):
+            # for every qubit, add a rotation gate
             for qb in range(n_qubits):
                 qc.rx(np.pi / 8, qb)
             
+            # entangle every qubit with the qubit prior
             for qb in range(n_qubits - 1):
                 qc.cx(qb, qb + 1)
             qc.barrier()

@@ -57,7 +57,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     # add measurement so the simulator can actually run
     qc.measure_all()
 
-    # use AerSimulator
+    # simulate noise
     simulator = AerSimulator()
     
     # adding noise model for noise detection
@@ -70,7 +70,7 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
         noise_model.add_all_qubit_quantum_error(error_2q, ['cx'])
 
     # transpile circuit for the simulator
-    # convert all gates to either be 'u' or 'cx' for simplicity (one-qubit vs two-qubit gate)
+    # convert all gates to either be 'u' (single qubit) or 'cx' (two qubit) for simplicity
     transpiled_qc = transpile(qc, simulator, optimization_level=optimization_level, basis_gates=['cx', 'u'])
 
     # extract static metrics
@@ -105,11 +105,10 @@ def evaluate_circuit(circuit_name, qc, shots, optimization_level, noise_rate, co
     for state, count in counts.items():
         measured_probs[state] = count / shots
 
-    # calculate Total Variation Distance (TVD)
+    # calculate Total Variation Distance for measuring output quality
     all_states = set(ideal_probs.keys()).union(set(measured_probs.keys()))
     tvd = 0.0
 
-    # calculate TVD
     for state in all_states:
         ideal_val = ideal_probs.get(state, 0.0)
         measured_val = measured_probs.get(state, 0.0)
